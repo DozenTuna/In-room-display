@@ -1,0 +1,6 @@
+in-room-display/.pio
+in-room-display/.vscode/.browse.c_cpp.db*
+in-room-display/.vscode/c_cpp_properties.json
+in-room-display/.vscode/launch.json
+in-room-display/.vscode/ipch
+in-room-display/data/config.txt
