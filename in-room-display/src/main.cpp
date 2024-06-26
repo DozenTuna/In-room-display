@@ -118,48 +118,74 @@ void setup() {
     // ディスプレイをクリア
     uint16_t black = convertRGBto565(0,0,0);
     Serial.println(black);
-    display.fillRect(0,0,96,64,0xFFFF);
+    display.fillRect(0,0,96,64,convertRGBto565(0,0,0));
     Serial.println("display blackfill");    
 }
 
 void loop() {
      // SPIFFSからWi-Fi設定を読み込む
+    display.fillRect(0,0,96,64,convertRGBto565(0,0,0));
     String ssid, password, address, username;
     if (!readConfig(ssid, password, address, username)) {
         Serial.println("Failed to read configuration");
         return;
     }
-    String position;
-    long RandNum = random(3);
-    if (RandNum < 1) {
-        position = "in";
-    } else if (RandNum < 2) {
-        position = "out";
-    } else {
-        position = "near";
-    }
+    display.setCursor(0,0);
+    display.print("config read");
+    // // HTTPクライアントを使用してPNG画像を取得
+    // HTTPClient http_csv;
+    // // リモートPCの設定
+    // String csv_path = "status.csv";
+    // const char* serverNameCsv = csv_path.c_str();
+    // http_csv.begin(serverNameCsv);
+    // int httpCode_csv = http_csv.GET();
 
+    // if (httpCode_csv == HTTP_CODE_OK) {
+    //     std::vector<unsigned char> payload;
+    //     WiFiClient * stream = http_csv.getStreamPtr();
+    //     size_t len = http_csv.getSize();
+    //     payload.resize(len);
+    //     stream->readBytes(payload.data(), len);
+
+    //     // PNG画像を描画
+    //     drawPNG(payload);
+    // } else {
+    //     Serial.printf("Failed to retrieve csv, HTTP code: %d\n", httpCode_csv);
+    // }
     // HTTPクライアントを使用してPNG画像を取得
+    display.setCursor(0,16);
+    display.print("connecting...");
     HTTPClient http;
     // リモートPCの設定
-    String image_path = address + username + "_"+position+".png";
+    String image_path = address + username + ".png";
     const char* serverName = image_path.c_str();
     http.begin(serverName);
     int httpCode = http.GET();
 
     if (httpCode == HTTP_CODE_OK) {
+        display.setCursor(0,32);
+        display.print("connected");
         std::vector<unsigned char> payload;
         WiFiClient * stream = http.getStreamPtr();
         size_t len = http.getSize();
         payload.resize(len);
         stream->readBytes(payload.data(), len);
-
+        display.fillRect(0,0,96,64,convertRGBto565(0,0,0));
         // PNG画像を描画
         drawPNG(payload);
     } else {
+        display.fillRect(0,0,96,64,convertRGBto565(0,0,0));
         Serial.printf("Failed to retrieve PNG, HTTP code: %d\n", httpCode);
+        display.setCursor(3,3);
+        display.setTextColor(convertRGBto565(255,0,0));
+        display.setTextSize(2);
+        display.print("HTTP");
+        display.setCursor(3,20);
+        display.print("Error:");
+        display.setCursor(3,35);
+        display.drawRect(0,0,96,64,convertRGBto565(255,0,0));
+        display.print(String(httpCode));
     }
-
     http.end();
-    delay(10000);
+    delay(60000);
 }
