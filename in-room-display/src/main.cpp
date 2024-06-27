@@ -103,7 +103,9 @@ void setup() {
         Serial.println("Failed to read configuration");
         return;
     }
-
+    // SSD1331ディスプレイの初期化
+    display.begin();
+    display.fillRect(0,0,96,64,convertRGBto565(255,0,0));
     // Wi-Fiに接続
     WiFi.begin(ssid.c_str(), password.c_str());
     while (WiFi.status() != WL_CONNECTED) {
@@ -112,24 +114,25 @@ void setup() {
     }
     Serial.println("Connected to WiFi");
 
-    // SSD1331ディスプレイの初期化
-    display.begin();
+    
 
     // ディスプレイをクリア
     uint16_t black = convertRGBto565(0,0,0);
     Serial.println(black);
     display.fillRect(0,0,96,64,convertRGBto565(0,0,0));
-    Serial.println("display blackfill");    
+    Serial.println("display blackfill");
+    display.setRotation(2);
 }
 
 void loop() {
      // SPIFFSからWi-Fi設定を読み込む
-    display.fillRect(0,0,96,64,convertRGBto565(0,0,0));
+    display.fillRect(0,0,96,64,convertRGBto565(255,0,0));
     String ssid, password, address, username;
     if (!readConfig(ssid, password, address, username)) {
         Serial.println("Failed to read configuration");
         return;
     }
+    display.setRotation(2);
     display.setCursor(0,0);
     display.print("config read");
     // // HTTPクライアントを使用してPNG画像を取得
