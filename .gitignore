@@ -4,3 +4,7 @@ in-room-display/.vscode/c_cpp_properties.json
 in-room-display/.vscode/launch.json
 in-room-display/.vscode/ipch
 in-room-display/data/config.txt
+server/ble/__pycache__
+server/ble/config.py
+server/ble/venv
+server/http/__pycache__
