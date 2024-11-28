@@ -16,6 +16,13 @@ const uint8_t RST_OLED  = 16; //OLED Reset RST
 // SSD1331のオブジェクトを作成
 Adafruit_SSD1331 display = Adafruit_SSD1331(CS_OLED,DC_OLED,MOSI_OLED,SCLK_OLED,RST_OLED);
 
+const char* ntpServer1 = "ntp.nict.jp";
+const char* ntpServer2 = "time.google.com";
+const char* ntpServer3 = "ntp.jst.mfeed.ad.jp";
+const long  gmtOffset_sec = 9 * 3600;
+const int   daylightOffset_sec = 0;
+
+
 // Wi-Fi設定を読み込む関数
 bool readConfig(String &ssid, String &password, String &address, String &username) {
     if (!SPIFFS.begin(true)) {
@@ -113,49 +120,44 @@ void setup() {
         Serial.println("Connecting to WiFi...");
     }
     Serial.println("Connected to WiFi");
-
-    
-
+    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer1, ntpServer2, ntpServer3);
     // ディスプレイをクリア
     uint16_t black = convertRGBto565(0,0,0);
     Serial.println(black);
     display.fillRect(0,0,96,64,convertRGBto565(0,0,0));
     Serial.println("display blackfill");
-    display.setRotation(2);
+    
 }
 
 void loop() {
-     // SPIFFSからWi-Fi設定を読み込む
+    struct tm timeinfo;
+    while(!getLocalTime(&timeinfo)){
+        Serial.println("Failed to obtain time");
+        delay(1000);
+    }
+    int hour = timeinfo.tm_hour;
+    Serial.println(hour);
+    if (true){
+        Serial.println("Display creaning start");
+        for (int i = 0; i < 40; i++){
+            display.fillRect(0,0,96,64,convertRGBto565(255,0,0));
+            delay(10000);
+            display.fillRect(0,0,96,64,convertRGBto565(0,255,0));
+            delay(10000);
+            display.fillRect(0,0,96,64,convertRGBto565(0,0,255));
+            delay(10000);
+        }
+        Serial.println("Display creaning end");
+    }
+    // SPIFFSからWi-Fi設定を読み込む
     display.fillRect(0,0,96,64,convertRGBto565(255,0,0));
     String ssid, password, address, username;
     if (!readConfig(ssid, password, address, username)) {
         Serial.println("Failed to read configuration");
         return;
     }
-    display.setRotation(2);
     display.setCursor(0,0);
     display.print("config read");
-    // // HTTPクライアントを使用してPNG画像を取得
-    // HTTPClient http_csv;
-    // // リモートPCの設定
-    // String csv_path = "status.csv";
-    // const char* serverNameCsv = csv_path.c_str();
-    // http_csv.begin(serverNameCsv);
-    // int httpCode_csv = http_csv.GET();
-
-    // if (httpCode_csv == HTTP_CODE_OK) {
-    //     std::vector<unsigned char> payload;
-    //     WiFiClient * stream = http_csv.getStreamPtr();
-    //     size_t len = http_csv.getSize();
-    //     payload.resize(len);
-    //     stream->readBytes(payload.data(), len);
-
-    //     // PNG画像を描画
-    //     drawPNG(payload);
-    // } else {
-    //     Serial.printf("Failed to retrieve csv, HTTP code: %d\n", httpCode_csv);
-    // }
-    // HTTPクライアントを使用してPNG画像を取得
     display.setCursor(0,16);
     display.print("connecting...");
     HTTPClient http;
